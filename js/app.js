@@ -35,10 +35,6 @@ function assignSoundToBadge(buttonSelector, soundSrc, options = {}) {
   const audio = new Audio(soundSrc);
   audio.preload = "auto";
 
-  // Optional Lautstaerke 0..1, Standard ist 1
-  const volume = typeof options.volume === "number" ? options.volume : 1;
-  audio.volume = Math.min(1, Math.max(0, volume));
-
   // Markiert dieses Element als "Sound-gesteuert"
   button.dataset.soundToggle = "true";
 
@@ -87,7 +83,44 @@ function assignSoundToBadge(buttonSelector, soundSrc, options = {}) {
   audio.addEventListener("ended", () => setToggleState(false));
 }
 
+// Keyboard: druecke die Taste, die auf dem Badge steht
+document.addEventListener("keydown", (e) => {
+  if (e.repeat) return;
+  const key = e.key.toLowerCase();
+
+  const match = Array.from(document.querySelectorAll(".nes-badge")).find(
+    (badge) => {
+      const span = badge.querySelector("span");
+      if (!span) return false;
+      const label = span.textContent.trim().toLowerCase();
+      return label === key;
+    },
+  );
+
+  if (!match) return;
+  match.click();
+  11;
+});
+
 assignSoundToBadge("#badge-9", "sound/TR808/808.wav", { volume: 0.7 });
+assignSoundToBadge("#badge-10", "sound/TR808/Hihat.wav", { volume: 0.7 });
+assignSoundToBadge("#badge-11", "sound/TR808/Kick Basic.wav", { volume: 0.7 });
+assignSoundToBadge("#badge-12", "sound/TR808/Snare Bright.wav", {
+  volume: 0.7,
+});
+assignSoundToBadge("#badge-13", "sound/TR808/Cowbell.wav", {
+  volume: 0.7,
+});
+assignSoundToBadge("#badge-14", "sound/TR808/Clap.wav", {
+  volume: 0.7,
+});
+assignSoundToBadge("#badge-15", "sound/TR808/Open Hat Long.wav", {
+  volume: 0.7,
+});
+
+assignSoundToBadge("#badge-16", "sound/TR808/Tom High.wav", {
+  volume: 0.7,
+});
 
 // Badge Toggles
 document.querySelectorAll(".nes-badge").forEach((badge) => {
