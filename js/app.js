@@ -2,6 +2,9 @@
 //https://fonts.google.com/selection/embed
 //////
 // Button Toggles
+
+let lastPlayed = null;
+
 document.querySelectorAll(".nes-btn").forEach((button) => {
   button.addEventListener("click", function () {
     if (
@@ -22,6 +25,27 @@ document.querySelectorAll(".nes-btn").forEach((button) => {
     }
   });
 });
+
+// Button Sound Mapping
+function assignSoundToBadge(buttonSelector, soundSrc, options = {}) {
+  const button = document.querySelector(buttonSelector);
+  if (!button) return;
+
+  const audio = new Audio(soundSrc);
+  audio.preload = "auto";
+
+  const volume = typeof options.volume === "number" ? options.volume : 1;
+  audio.volume = Math.min(1, Math.max(0, volume));
+
+  button.addEventListener("click", () => {
+    audio.currentTime = 0;
+    audio.play();
+    let lastPlayed = soundSrc;
+  });
+}
+
+// Example: map sounds to existing buttons
+assignSoundToBadge("#badge-9", "sound/TR808/808.wav", { volume: 0.7 });
 
 // Badge Toggles
 document.querySelectorAll(".nes-badge").forEach((badge) => {
