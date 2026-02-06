@@ -1,6 +1,6 @@
 //https://nostalgic-css.github.io/NES.css/#
 //https://fonts.google.com/selection/embed
-////
+//////
 // Button Toggles
 document.querySelectorAll(".nes-btn").forEach((button) => {
   button.addEventListener("click", function () {
