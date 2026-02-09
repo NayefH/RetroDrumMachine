@@ -5,6 +5,7 @@
 
 let lastPlayed = null;
 
+//Togglet die NES-Buttons
 document.querySelectorAll(".nes-btn").forEach((button) => {
   button.addEventListener("click", function () {
     if (this.dataset.soundToggle === "true") return;
@@ -28,6 +29,7 @@ document.querySelectorAll(".nes-btn").forEach((button) => {
 });
 
 // Button Sound Mapping
+
 function assignSoundToBadge(buttonSelector, soundSrc, options = {}) {
   const button = document.querySelector(buttonSelector);
   if (!button) return;
@@ -36,7 +38,7 @@ function assignSoundToBadge(buttonSelector, soundSrc, options = {}) {
   audio.preload = "auto";
 
   // Markiert dieses Element als "Sound-gesteuert"
-  button.dataset.soundToggle = "true";
+  // button.dataset.soundToggle = "true";
 
   // Bei Badges toggeln wir das <span>, bei Buttons das Element selbst
   const getToggleTarget = () => {
@@ -50,6 +52,8 @@ function assignSoundToBadge(buttonSelector, soundSrc, options = {}) {
   const setToggleState = (isActive) => {
     const target = getToggleTarget();
     if (!target) return;
+
+    target.classList.toggle("is-active", isActive);
 
     if (
       target.classList.contains("is-primary") ||
