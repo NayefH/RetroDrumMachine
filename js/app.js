@@ -1,8 +1,11 @@
 // Core state
+// Merkt sich den zuletzt ueber 1-8 abgespielten Sound.
 let lastPlayed = null;
 
 // Constants
 const SEQUENCE_LABELS = ["A", "B", "C", "D", "E", "F", "G", "H"];
+const SEQUENCE_BPM = 130;
+const STEP_MS = (60 / SEQUENCE_BPM) * 1000;
 
 // Helpers
 function getBadgeLabel(badge) {
@@ -14,18 +17,22 @@ function getBadgeLabel(badge) {
 function getSequenceBadges() {
   const allBadges = Array.from(document.querySelectorAll(".nes-badge"));
 
+  // Liefert die Badges A-H immer in fester Reihenfolge.
   return SEQUENCE_LABELS.map((label) =>
     allBadges.find((badge) => getBadgeLabel(badge) === label),
   ).filter(Boolean);
 }
 
 function assignLastPlayedToSequenceBadge(badge, label) {
+  // Nur A-H koennen eine Sequenz-Zuordnung erhalten.
   if (SEQUENCE_LABELS.includes(label) && lastPlayed) {
+    // Die Zuordnung wird direkt am Badge gespeichert.
     badge.dataset.assignedSound = lastPlayed;
   }
 }
 
 function playSequenceBadges() {
+  // Spielt nur Badges ab, die bereits einen Sound zugewiesen haben.
   const assignedSounds = getSequenceBadges()
     .map((badge) => badge.dataset.assignedSound)
     .filter(Boolean);
@@ -35,7 +42,7 @@ function playSequenceBadges() {
       const audio = new Audio(soundSrc);
       audio.currentTime = 0;
       audio.play();
-    }, index * 1000);
+    }, index * STEP_MS);
   });
 }
 
@@ -48,6 +55,7 @@ function assignSoundToBadge(buttonSelector, soundSrc) {
   audio.preload = "auto";
 
   const getToggleTarget = () => {
+    // Bei .nes-badge wird die Farbe am <span> geaendert, sonst am Element selbst.
     if (button.classList.contains("nes-badge")) {
       return button.querySelector("span");
     }
@@ -79,6 +87,7 @@ function assignSoundToBadge(buttonSelector, soundSrc) {
   };
 
   button.addEventListener("click", () => {
+    // Dieser Sound ist jetzt der letzte ausgewaehlte fuer A-H.
     lastPlayed = soundSrc;
     audio.currentTime = 0;
     audio.play();
