@@ -31,6 +31,11 @@ if (playButton) {
   playButton.addEventListener("click", playSequenceBadges);
 }
 
+const pauseButton = document.querySelector("#green-btn");
+if (pauseButton) {
+  pauseButton.addEventListener("click", toggleSequencePause);
+}
+
 // Erlaubt Keyboard-Steuerung fuer Badge-Labels (A-H, 1-8).
 document.addEventListener("keydown", (e) => {
   // Verhindert mehrfaches Triggern beim Gedrueckthalten.
