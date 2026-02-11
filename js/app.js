@@ -37,18 +37,16 @@ let isSequencePaused = false;
 // Ref: MDN EventTarget.addEventListener
 // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
 // Schaltet bei normalen NES-Buttons die Farben um (z. B. primary <-> warning),
-// ausser der Button ist als "sound-gesteuert" markiert.
 function wireButtonColorToggle(button) {
   button.addEventListener("click", function () {
-    // Ref: MDN HTMLElement.dataset
-    // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset
-    // Buttons mit data-sound-toggle werden durch Audio-/Transport-Events gesteuert,
-    // nicht durch den reinen Klick.
     if (this.dataset.soundToggle === "true") return;
 
     // Ref: MDN Element.classList + DOMTokenList.toggle(force)
     // https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
     // https://developer.mozilla.org/docs/Web/API/DOMTokenList/toggle
+    // Primary = Blau, Success = Grün, Warning = Gelb, Error = Rot
+    // Wird für Play und Pause verwendet
+
     if (
       this.classList.contains("is-primary") ||
       this.classList.contains("is-warning")
@@ -70,7 +68,9 @@ function wireButtonColorToggle(button) {
 
 // Setzt den aktiven UI-Status fuer einen Button inklusive Farbklasse.
 // Die Funktion unterstuetzt beide in der UI genutzten Farbpaarungen:
-// primary/warning sowie success/error.
+// primary/warning sowie success/error
+// Primary = Blau, Success = Grün, Warning = Gelb, Error = Rot
+
 function setButtonToggleClasses(button, isActive) {
   if (!button) return;
 
@@ -367,8 +367,6 @@ function wireKeyboardToBadges() {
 function wireBadgeClickBehavior() {
   document.querySelectorAll(".nes-badge").forEach((badge) => {
     badge.addEventListener("click", function () {
-      if (this.dataset.soundToggle === "true") return;
-
       const badgeLabel = this.querySelector("span");
       if (!badgeLabel) return;
 
