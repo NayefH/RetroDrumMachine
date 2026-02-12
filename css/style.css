@@ -1,72 +1,51 @@
+:root {
+    --bg-0: #080101;
+    --bg-1: #150404;
+    --panel-0: #130606;
+    --panel-1: #250b0b;
+    --line: #8a2a2a;
+    --line-soft: #4f1717;
+    --text: #ffe7e7;
+    --muted: #ffc4c4;
+    --glow: rgba(255, 60, 60, 0.28);
+    --shadow: rgba(0, 0, 0, 0.55);
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 body {
     min-height: 100vh;
     margin: 0;
     font-family: "Press Start 2P", system-ui, sans-serif;
-    background-color: #0b1020;
-    background-image:
-        linear-gradient(180deg, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.85)),
-        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 80px),
-        radial-gradient(circle at 20% 10%, rgba(235, 51, 35, 0.16), transparent 45%),
-        radial-gradient(circle at 80% 20%, rgba(59, 76, 202, 0.18), transparent 50%);
-    background-size: auto, auto, auto, auto;
-    color: #f2f5ff;
+    color: var(--text);
+    background:
+        radial-gradient(circle at 15% 8%, rgba(255, 60, 60, 0.16), transparent 42%),
+        radial-gradient(circle at 82% 22%, rgba(255, 60, 60, 0.1), transparent 45%),
+        repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0 2px, transparent 2px 4px),
+        linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 100%);
 }
-
-
-body {
-    color: #f2f5ff;
-    background-color: #0b1020;
-    background-image:
-        radial-gradient(2px 2px at 20px 30px, rgba(0, 0, 0, 0.85), transparent 60%),
-        radial-gradient(1.5px 1.5px at 80px 120px, rgba(0, 0, 0, 0.85), transparent 60%),
-        radial-gradient(1px 1px at 140px 60px, rgba(0, 0, 0, 0.8), transparent 60%),
-        radial-gradient(1.5px 1.5px at 240px 180px, rgba(0, 0, 0, 0.75), transparent 60%),
-        radial-gradient(circle at 50% 10%, rgba(255, 10, 10, 0.247), transparent 100%),
-        linear-gradient(180deg, #000000 0%, #05070f 100%);
-    background-size: 260px 260px, 300px 300px, 220px 220px, 340px 340px, auto, auto;
-}
-
 
 #container1 {
     margin: 20px;
-
 }
 
 h1 div {
-    background: linear-gradient(180deg, #000000 0%, #ff0202 100%);
-    border: 4px solid #3a3b45;
-    box-shadow: 0 8px 0 #0b0c10, 0 14px 24px rgba(0, 0, 0, 0.35);
+    display: flex;
+    justify-content: center;
+    align-items: center;
     text-transform: uppercase;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.icon-list {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.icon-list.grid-1 {
-    width: min(760px, 94vw);
-    margin: 12px auto;
-    gap: 10px;
-    justify-items: center;
-    align-items: center;
-}
-
-.nes-badge {
-    padding-top: 10px;
-    display: block;
-    margin: 10px auto;
-    filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.35));
-    transform: translateZ(0);
+    letter-spacing: 2px;
+    background: linear-gradient(180deg, var(--panel-1) 0%, var(--panel-0) 100%);
+    border: 4px solid var(--line);
+    box-shadow: 0 8px 0 #000, 0 0 24px var(--glow);
 }
 
 #buttons-container {
-    margin-top: 30px;
-    margin-bottom: 30px;
+    margin: 28px 0;
 }
 
 #buttons1 {
@@ -77,21 +56,17 @@ h1 div {
 }
 
 #badges-container {
+    width: min(820px, 94vw);
+    margin: 30px auto;
+    padding: 16px;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
     gap: 10px;
-    margin-top: 30px;
-    margin-bottom: 30px;
-    background: linear-gradient(180deg, #000000 50%, #ff0000 100%);
-    border: 4px solid #ffffff;
-    padding: 16px;
-
-    width: min(820px, 94vw);
-
-    margin-left: auto;
-    margin-right: auto;
+    background: linear-gradient(180deg, var(--panel-1) 0%, var(--panel-0) 100%);
+    border: 4px solid var(--line);
+    box-shadow: inset 0 0 0 2px var(--line-soft), 0 0 20px var(--glow);
 }
 
 .grid-1 {
@@ -100,39 +75,59 @@ h1 div {
     gap: 10px;
 }
 
+.upper-Container {
+    width: min(820px, 94vw);
+    margin: 0 auto -30px;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    color: var(--muted);
+    background: linear-gradient(180deg, #220b0b 0%, #150606 100%);
+    border: 4px solid var(--line);
+    text-shadow: 0 0 8px rgba(255, 60, 60, 0.35);
+    box-shadow: 0 0 16px rgba(255, 60, 60, 0.22);
+}
+
 .nes-btn {
     text-transform: uppercase;
     letter-spacing: 1px;
-    box-shadow: 0 6px 0 #0b0c10;
+    box-shadow: 0 6px 0 #000;
+    transition: transform 0.1s ease, filter 0.2s ease;
+}
+
+.nes-btn:hover {
+    filter: brightness(1.08);
 }
 
 .nes-btn:active {
     transform: translateY(4px);
-    box-shadow: 0 2px 0 #0b0c10;
+    box-shadow: 0 2px 0 #000;
+}
+
+.nes-badge {
+    padding-top: 10px;
+    display: block;
+    margin: 10px auto;
+    filter: drop-shadow(0 4px 0 var(--shadow));
+    transform: translateZ(0);
 }
 
 .nes-badge span {
     text-transform: uppercase;
 }
 
-.upper-Container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
+.nes-badge span.is-playing-step {
+    display: inline-block;
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 0 0 3px #fff0f0, 0 0 18px var(--glow);
+    filter: brightness(1.15);
+}
 
-    font-style: italic;
-    color: white;
-    background: linear-gradient(180deg, #000000 50%, #ff0000 100%);
-
-    padding: 10px;
-    margin-bottom: -30px;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(255, 255, 255, 0.364);
-
-    width: min(820px, 94vw);
-
-
-    margin-left: auto;
-    margin-right: auto;
+@media (max-width: 900px) {
+    .grid-1 {
+        grid-template-columns: repeat(4, 1fr);
+    }
 }

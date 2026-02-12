@@ -4,11 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Retrodummachine</title>
+    <link href="https://unpkg.com/nes.css@2.3.0/css/nes.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="./node_modules/nes.css/css/nes.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Press+Start+2P&display=swap"
         rel="stylesheet">
@@ -32,32 +35,10 @@
             <button type="button" class="nes-btn is-success" id="green-btn">PAUSE</button>
         </div>
     </div>
-    <hr>
 
 
-
-    <section class="icon-list grid-1">
-        <!-- heart -->
-        <i class="nes-icon is-large heart"></i>
-        <i class="nes-icon is-large heart"></i>
-        <i class="nes-icon is-large heart is-empty"></i>
-        <i class="nes-icon is-large heart is-empty"></i>
-
-        <!-- star -->
-        <i class="nes-icon is-large star"></i>
-        <i class="nes-icon is-large star"></i>
-        <i class="nes-icon is-large star is-empty"></i>
-        <i class="nes-icon is-large star is-empty"></i>
-
-    </section>
-
-    <hr>
     <div class="upper-Container">
-
-
-
         <i class="nes-mario"></i>
-
         Sequencer
     </div>
     <!-- Badges -->
@@ -87,9 +68,16 @@
         <a class="nes-badge" id="badge-8">
             <span class="is-primary">H</span>
         </a>
+        <div class="nes-select">
+            <select required id="default_select pattern">
+                <option value="" disabled selected hidden>Pattern</option>
+                <option value="0">1</option>
+                <option value="1">2</option>
+            </select>
+        </div>
 
     </div>
-    <hr>
+
     <div class="upper-Container">
 
         <i class="nes-jp-logo"> </i>
@@ -133,6 +121,13 @@
             <span class="is-success">8</span>
         </a>
 
+        <div class="nes-select">
+            <select required id="default_select bpm">
+                <option value="" disabled selected hidden>BPM</option>
+                <option value="0">120</option>
+                <option value="1">90</option>
+            </select>
+        </div>
     </div>
 
     <div id="container1">
