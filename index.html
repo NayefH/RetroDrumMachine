@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retrodummachine</title>
+    <title>Retrodrummachine</title>
     <link href="https://unpkg.com/nes.css@2.3.0/css/nes.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="./node_modules/nes.css/css/nes.min.css">
@@ -37,8 +37,14 @@
     </div>
 
 
+
+
     <div class="upper-Container">
+
+
+
         <i class="nes-mario"></i>
+
         Sequencer
     </div>
     <!-- Badges -->
@@ -68,14 +74,14 @@
         <a class="nes-badge" id="badge-8">
             <span class="is-primary">H</span>
         </a>
-        <div class="nes-select">
-            <select required id="default_select pattern">
+        <label for="error_select">nes-select.is-error</label>
+        <div class="nes-select is-error">
+            <select required id="error_select">
                 <option value="" disabled selected hidden>Pattern</option>
                 <option value="0">1</option>
                 <option value="1">2</option>
             </select>
         </div>
-
     </div>
 
     <div class="upper-Container">
@@ -121,13 +127,11 @@
             <span class="is-success">8</span>
         </a>
 
-        <div class="nes-select">
-            <select required id="default_select bpm">
-                <option value="" disabled selected hidden>BPM</option>
-                <option value="0">120</option>
-                <option value="1">90</option>
-            </select>
+        <div class="nes-field is-inline">
+
+            <input type="text" id="error_field" class="nes-input is-error" placeholder="BPM">
         </div>
+
     </div>
 
     <div id="container1">

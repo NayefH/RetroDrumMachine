@@ -1,5 +1,4 @@
-// Retro Drum Machine - object oriented runtime
-
+// Retro Drum Machine - object oriented
 class SequencerEngine {
   constructor({ stepMs, onTransportChange }) {
     // Timing pro Step und Callback für UI-Status (Play/Pause Buttons).
@@ -162,7 +161,7 @@ class SequencerEngine {
       const hooks = this.audioHooks.get(audio);
       if (hooks && typeof hooks.onResume === "function") hooks.onResume();
       const playPromise = audio.play();
-      if (playPromise && typeof playPromise.catch === "function") {
+      if (playPromise) {
         playPromise.catch(() => {
           this.activeAudios.delete(audio);
           this.audioHooks.delete(audio);
