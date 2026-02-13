@@ -2,30 +2,44 @@
 class SequencerEngine {
   constructor({ stepMs, onTransportChange }) {
     // Timing pro Step und Callback für UI-Status (Play/Pause Buttons).
+    // Dauer eines Sequencer-Schritts in Millisekunden.
     this.stepMs = stepMs;
+    // UI-Callback, um Play/Pause-Status nach außen zu melden.
     this.onTransportChange = onTransportChange;
 
     // Laufzeitstatus der Sequenz.
+    // Alle aktuell laufenden Audio-Instanzen.
     this.activeAudios = new Set();
+    // Zuordnung Audio-Instanz
     this.audioHooks = new Map();
+    // IDs aller geplanten setTimeout-Aufrufe.
     this.timeouts = [];
+    // Noch nicht ausgelöste Steps des aktuellen Durchlaufs.
     this.scheduledSteps = [];
+    // Zwischengespeicherte Rest-Steps für Pause/Resume.
     this.pausedSteps = [];
+    // Aktuelles Pattern als Liste von Sounds/Step-Einträgen.
+    this.currentSequence = [];
+    // Steuert, ob das Pattern nach Ende automatisch neu startet.
+    this.isLooping = true;
+    // true, wenn Sequencer aktiv läuft.
     this.isPlaying = false;
+    // true, wenn Sequencer pausiert ist.
     this.isPaused = false;
   }
 
   emitTransport() {
+    console.log("SequencerEngine.emitTransport");
     // Meldet den aktuellen Transportzustand an die UI-Schicht.
-    if (typeof this.onTransportChange === "function") {
-      this.onTransportChange({
-        isPlaying: this.isPlaying,
-        isPaused: this.isPaused,
-      });
-    }
+
+    this.onTransportChange({
+      isPlaying: this.isPlaying,
+      isPaused: this.isPaused,
+    });
   }
 
   clearScheduledTimeouts() {
+    console.log("SequencerEngine.clearScheduledTimeouts");
     // Stoppt alle geplanten Steps und leert die Planungsdaten.
     this.timeouts.forEach((id) => clearTimeout(id));
     this.timeouts = [];
@@ -37,6 +51,7 @@ class SequencerEngine {
     // Beendet Sequenz vollständig (geplante Steps + laufende Audios).
     this.clearScheduledTimeouts();
     this.pausedSteps = [];
+    this.currentSequence = [];
 
     this.activeAudios.forEach((audio) => {
       audio.pause();
@@ -49,11 +64,43 @@ class SequencerEngine {
     this.emitTransport();
   }
 
+  scheduleSequenceCycle(startDelayMs = 0) {
+    console.log("SequencerEngine.scheduleSequenceCycle");
+    // Plant einen kompletten Durchlauf der aktuell geladenen Sequenz.
+    // startDelayMs erlaubt, den nächsten Durchlauf exakt auf dem Grid zu starten.
+    // Beispiel: Bei stepMs=300 und startDelayMs=300 startet Step 1 erst in 300ms.
+    this.currentSequence.forEach((entry, index) => {
+      let soundSrc = null;
+      let hooks = {};
+
+      if (typeof entry === "string") {
+        // Kurzform: Eintrag ist direkt der Dateipfad zum Sound.
+        soundSrc = entry;
+      } else if (entry && typeof entry === "object") {
+        // Langform: Eintrag enthält Sound + optionale Callback-Hooks.
+        soundSrc = entry.soundSrc;
+        if (entry.hooks) hooks = entry.hooks;
+      }
+
+      // Ungültige/Leereinträge werden übersprungen.
+      if (!soundSrc) return;
+      // Jeder Step wird relativ zum Zyklus-Start geplant.
+      this.scheduleStep(soundSrc, startDelayMs + index * this.stepMs, hooks);
+    });
+  }
+
   maybeFinish() {
+    console.log("SequencerEngine.maybeFinish");
     // Auto-Stop nur, wenn wirklich nichts mehr aktiv/geplant ist.
     if (this.isPaused) return;
+    // Im Loop-Modus stoppen wir hier nie.
+    // Der nächste Zyklus wird vorher schon in scheduleStep eingeplant.
+    if (this.isPlaying && this.isLooping) return;
+    // Solange noch Steps geplant sind, darf nicht gestoppt werden.
     if (this.scheduledSteps.length > 0) return;
+    // Solange noch Audios laufen, darf nicht gestoppt werden.
     if (this.activeAudios.size > 0) return;
+    // Nur wenn nichts mehr läuft/geplant ist: sauber stoppen.
     this.stop();
   }
 
@@ -85,48 +132,67 @@ class SequencerEngine {
     audio.currentTime = 0;
 
     const playPromise = audio.play();
-
-    //Falls das Abspielen fehlschlägt (z. B. Autoplay blockiert), wird cleanup() aufgerufen, um aufzuräumen
-    if (playPromise && typeof playPromise.catch === "function") {
-      playPromise.catch(() => cleanup());
-    }
   }
 
   scheduleStep(soundSrc, delayMs, hooks = {}) {
+    console.log("SequencerEngine.scheduleStep");
     // Plant einen Sound für die Zukunft und merkt Zielzeit fürs Pausieren.
+    // Absolute Zielzeit dieses Steps (wichtig für korrektes Resume).
     const targetTime = performance.now() + delayMs;
+    // Metadaten-Objekt für einen geplanten Step.
     const step = { soundSrc, targetTime, hooks };
+    // Step wird registriert, damit Pause/Resume und Finish-Checks korrekt sind.
     this.scheduledSteps.push(step);
 
     const timeoutId = setTimeout(() => {
+      // Beim Auslösen wird dieser Timeout/Step aus den Tracking-Listen entfernt.
       this.timeouts = this.timeouts.filter((id) => id !== timeoutId);
       this.scheduledSteps = this.scheduledSteps.filter(
         (candidate) => candidate !== step,
       );
 
+      // Falls zwischenzeitlich gestoppt oder pausiert wurde: nichts mehr abspielen.
       if (!this.isPlaying || this.isPaused) return;
       this.playSound(soundSrc, hooks);
+
+      // Wenn dieser Step der letzte geplante war, den nächsten Zyklus sofort einreihen.
+      // So bleibt das Timing rastergenau und es entsteht kein Gap zwischen den Loops.
+      if (
+        this.isPlaying &&
+        !this.isPaused &&
+        this.isLooping &&
+        this.currentSequence.length > 0 &&
+        this.scheduledSteps.length === 0
+      ) {
+        // Der neue Zyklus startet genau ein Step-Intervall nach dem letzten Trigger.
+        this.scheduleSequenceCycle(this.stepMs);
+      }
+
+      // Prüft, ob gestoppt werden soll (nur relevant außerhalb des Loop-Modus).
       this.maybeFinish();
     }, delayMs);
 
+    // Timeout-ID merken, damit stop()/pause() geplante Steps abbrechen kann.
     this.timeouts.push(timeoutId);
   }
 
-  playFromSounds(soundList) {
+  playFromSounds(soundList, { loop = true } = {}) {
     console.log("SequencerEngine.playFromSounds");
     // Startet neue Sequenz von vorn und ersetzt eventuell laufende Sequenz.
+    // soundList: Belegung der Steps für einen kompletten Durchlauf.
+    // loop: aktiviert/deaktiviert automatisches Wiederholen.
     if (!Array.isArray(soundList) || soundList.length === 0) return;
 
+    // Vorherigen Lauf komplett beenden (inkl. geplanter Timeouts/Audios).
     this.stop();
+    // Pattern als aktive Sequenz speichern, damit der Loop dieselben Steps nutzt.
+    this.currentSequence = [...soundList];
+    // Loop standardmäßig aktiv; kann per Option abgeschaltet werden.
+    this.isLooping = loop;
     this.isPlaying = true;
     this.emitTransport();
-
-    soundList.forEach((entry, index) => {
-      const soundSrc = typeof entry === "string" ? entry : entry?.soundSrc;
-      const hooks = typeof entry === "object" && entry ? entry.hooks || {} : {};
-      if (!soundSrc) return;
-      this.scheduleStep(soundSrc, index * this.stepMs, hooks);
-    });
+    // Ersten Durchlauf ohne Start-Offset planen.
+    this.scheduleSequenceCycle();
   }
 
   pause() {
@@ -181,7 +247,7 @@ class SequencerEngine {
 
   togglePause() {
     console.log("SequencerEngine.togglePause");
-    // Komfortfunktion für denselben Button: Pause <-> Resume.
+    // Komfortfunktion für denselben Button: Pause <-> Resume oder so
     if (this.isPaused) {
       this.resume();
       return;
@@ -194,9 +260,13 @@ class SequencerEngine {
 class DrumMachineApp {
   constructor() {
     // Sequencer-Konfiguration + App-Zustand.
+    // Feste Reihenfolge der Sequencer-Slots im UI.
     this.sequenceLabels = ["A", "B", "C", "D", "E", "F", "G", "H"];
-    this.sequenceBpm = 130;
+    // Tempo in Beats per Minute.
+    this.sequenceBpm = 300;
+    // Umrechnung BPM -> Millisekunden pro Step.
     this.stepMs = (60 / this.sequenceBpm) * 1000;
+    // Zuletzt manuell gespielter Sound (für Zuweisung auf A-H).
     this.lastPlayed = null;
 
     this.sequencer = new SequencerEngine({
@@ -210,6 +280,7 @@ class DrumMachineApp {
   }
 
   wireButtonColorToggle(button) {
+    console.log("DrumMachineApp.wireButtonColorToggle");
     // Generischer Farb-Toggle für normale NES-Buttons.
     button.addEventListener("click", function () {
       // Sound-gesteuerte Buttons (Play/Pause) werden separat verwaltet.
@@ -234,6 +305,7 @@ class DrumMachineApp {
   }
 
   setButtonToggleClasses(button, isActive) {
+    console.log("DrumMachineApp.setButtonToggleClasses");
     // Setzt aktive/inaktive Farbpaare konsistent (primary/warning, success/error).
     if (!button) return;
 
@@ -258,23 +330,29 @@ class DrumMachineApp {
   }
 
   setPlayButtonState(isActive) {
+    console.log("DrumMachineApp.setPlayButtonState");
     this.setButtonToggleClasses(document.querySelector("#blue-btn"), isActive);
   }
 
   setPauseButtonState(isActive) {
+    console.log("DrumMachineApp.setPauseButtonState");
     this.setButtonToggleClasses(document.querySelector("#green-btn"), isActive);
   }
 
   getBadgeLabel(badge) {
-    // Liest sichtbares Badge-Label (z.B. A-H oder 1-8)
+    console.log("DrumMachineApp.getBadgeLabel");
+    // Liest sichtbares Label robust fuer .nes-badge (span) und .nes-btn (Text).
     const span = badge.querySelector("span");
-    if (!span) return null;
-    return span.textContent.trim().toUpperCase();
+    if (span) return span.textContent.trim().toUpperCase();
+    return badge.textContent.trim().toUpperCase();
   }
 
   getSequenceBadges() {
+    console.log("DrumMachineApp.getSequenceBadges");
     // Liefert A-H in fixer Reihenfolge für reproduzierbare Sequenzen.
-    const allBadges = Array.from(document.querySelectorAll(".nes-badge"));
+    const allBadges = Array.from(
+      document.querySelectorAll(".nes-badge, #badges-container .nes-btn"),
+    );
 
     return this.sequenceLabels
       .map((label) =>
@@ -284,6 +362,7 @@ class DrumMachineApp {
   }
 
   assignLastPlayedToSequenceBadge(badge, label) {
+    console.log("DrumMachineApp.assignLastPlayedToSequenceBadge");
     // Speichert Slot-Zuordnung direkt am DOM-Element (data-assigned-sound).
     if (this.sequenceLabels.includes(label) && this.lastPlayed) {
       badge.dataset.assignedSound = this.lastPlayed;
@@ -300,9 +379,10 @@ class DrumMachineApp {
     this.sequencer.playFromSounds(assignedSounds);
   }
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////Initialisierung:
 
   wireTransportButtons() {
+    console.log("DrumMachineApp.wireTransportButtons");
     // Verknüpft Play/Pause Buttons mit Sequencer-Funktionen.
     const playButton = document.querySelector("#blue-btn");
     if (playButton) {
@@ -318,18 +398,15 @@ class DrumMachineApp {
   }
 
   wireKeyboardToBadges() {
+    console.log("DrumMachineApp.wireKeyboardToBadges");
     // Tastatur verhält sich wie Klick auf entsprechendes Badge.
     document.addEventListener("keydown", (e) => {
       if (e.repeat) return;
       const key = e.key.toLowerCase();
 
-      const match = Array.from(document.querySelectorAll(".nes-badge")).find(
-        (badge) => {
-          const span = badge.querySelector("span");
-          if (!span) return false;
-          return span.textContent.trim().toLowerCase() === key;
-        },
-      );
+      const match = Array.from(
+        document.querySelectorAll(".nes-badge, #badges-container .nes-btn"),
+      ).find((badge) => this.getBadgeLabel(badge)?.toLowerCase() === key);
 
       if (match) {
         match.click();
@@ -338,50 +415,54 @@ class DrumMachineApp {
   }
 
   wireBadgeClickBehavior() {
+    console.log("DrumMachineApp.wireBadgeClickBehavior");
     // A-H: Slot-Zuweisung + Aktivierung, 1-8: visueller Toggle.
-    document.querySelectorAll(".nes-badge").forEach((badge) => {
-      badge.addEventListener("click", () => {
-        const badgeLabel = badge.querySelector("span");
-        if (!badgeLabel) return;
+    document
+      .querySelectorAll(".nes-badge, #badges-container .nes-btn")
+      .forEach((badge) => {
+        badge.addEventListener("click", () => {
+          const badgeLabel = badge.querySelector("span") || badge;
+          if (!badgeLabel) return;
 
-        const label = badgeLabel.textContent.trim().toUpperCase();
-        this.assignLastPlayedToSequenceBadge(badge, label);
+          const label = this.getBadgeLabel(badge);
+          this.assignLastPlayedToSequenceBadge(badge, label);
 
-        const isSequenceBadge =
-          label.length === 1 && label >= "A" && label <= "H";
-        const hasAssignedSound = Boolean(badge.dataset.assignedSound);
+          const isSequenceBadge =
+            label.length === 1 && label >= "A" && label <= "H";
+          const hasAssignedSound = Boolean(badge.dataset.assignedSound);
 
-        if (isSequenceBadge && !hasAssignedSound) return;
+          if (isSequenceBadge && !hasAssignedSound) return;
 
-        if (isSequenceBadge) {
-          if (badgeLabel.classList.contains("is-primary")) {
-            badgeLabel.classList.remove("is-primary");
-            badgeLabel.classList.add("is-warning");
+          if (isSequenceBadge) {
+            if (badgeLabel.classList.contains("is-primary")) {
+              badgeLabel.classList.remove("is-primary");
+              badgeLabel.classList.add("is-warning");
+            }
+            return;
           }
-          return;
-        }
 
-        if (
-          badgeLabel.classList.contains("is-primary") ||
-          badgeLabel.classList.contains("is-warning")
-        ) {
-          badgeLabel.classList.toggle("is-primary");
-          badgeLabel.classList.toggle("is-warning");
-          return;
-        }
+          if (
+            badgeLabel.classList.contains("is-primary") ||
+            badgeLabel.classList.contains("is-warning")
+          ) {
+            badgeLabel.classList.toggle("is-primary");
+            badgeLabel.classList.toggle("is-warning");
+            return;
+          }
 
-        if (
-          badgeLabel.classList.contains("is-success") ||
-          badgeLabel.classList.contains("is-error")
-        ) {
-          badgeLabel.classList.toggle("is-success");
-          badgeLabel.classList.toggle("is-error");
-        }
+          if (
+            badgeLabel.classList.contains("is-success") ||
+            badgeLabel.classList.contains("is-error")
+          ) {
+            badgeLabel.classList.toggle("is-success");
+            badgeLabel.classList.toggle("is-error");
+          }
+        });
       });
-    });
   }
 
   assignSoundToBadge(buttonSelector, soundSrc) {
+    console.log("DrumMachineApp.assignSoundToBadge");
     // Verknüpft ein Control-Badge mit einem festen Sound.
     const button = document.querySelector(buttonSelector);
     if (!button) return;
