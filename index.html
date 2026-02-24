@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="de">
 
 <head>
@@ -68,12 +68,20 @@
         <button type="button" class="nes-btn is-primary">H</button>
 
 
-        <div class="nes-select is-error">
-            <select required id="error_select">
-                <option value="" disabled selected hidden>Pattern</option>
-                <option value="0">1</option>
-                <option value="1">2</option>
-            </select>
+        <div class="pattern-tools">
+            <div class="nes-select is-error">
+                <select id="pattern-select">
+                    <option value="pattern-1">Pattern 1</option>
+                    <option value="pattern-2">Pattern 2</option>
+                    <option value="pattern-3">Pattern 3</option>
+                    <option value="pattern-4">Pattern 4</option>
+                </select>
+            </div>
+            <button type="button" class="nes-btn is-primary" id="save-pattern-btn" data-ui-control="true">Save</button>
+            <button type="button" class="nes-btn is-success" id="load-pattern-btn" data-ui-control="true">Load</button>
+            <button type="button" class="nes-btn is-primary" id="example-pattern-btn" data-ui-control="true">Example</button>
+            <button type="button" class="nes-btn is-warning" id="queue-pattern-btn" data-ui-control="true">In Song</button>
+            <button type="button" class="nes-btn is-error" id="clear-song-btn" data-ui-control="true">Song clear</button>
         </div>
     </div>
 
@@ -120,11 +128,19 @@
             <span class="is-success">8</span>
         </a>
 
-        <div class="nes-field is-inline">
-
-            <input type="text" id="error_field" class="nes-input is-error" placeholder="BPM">
+        <div class="transport-tools">
+            <div class="nes-field is-inline">
+                <input type="number" id="bpm-input" class="nes-input is-error" min="40" max="300" step="1"
+                    value="120" placeholder="BPM">
+            </div>
+            <button type="button" class="nes-btn is-warning" id="apply-bpm-btn" data-ui-control="true">Set BPM</button>
         </div>
 
+    </div>
+
+    <div class="upper-Container song-info">
+        <i class="nes-icon heart is-small"></i>
+        <span id="song-order-label">Songfolge: leer</span>
     </div>
 
 
@@ -139,8 +155,17 @@
                 <!-- Balloon -->
                 <div class="nes-container is-rounded is-dark">
                     <i class="nes-kirby"></i>
-                    <p>Drücke die Zahlentasten auf deiner Tastatur um Sounds abzuspielen oder klicke drauf.
-                        Anschließend klicke auf A-G um die Sounds auf dein Pattern zu legen.
+                    <p>Drücke die Zahlentasten auf deiner Tastatur, um Sounds abzuspielen, oder klicke darauf.
+                        Anschließend klicke auf A-H, um den zuletzt gespielten Sound auf einen Step zu legen.
+                        <br><br>
+                        Anleitung:
+                        <br>1. Pattern wählen (Pattern 1-4).
+                        <br>2. Mit Save speichern, mit Load laden.
+                        <br>3. Mit Example ein Demo-Pattern einfügen.
+                        <br>4. Mit In Song mehrere Patterns zur Songfolge hinzufügen.
+                        <br>5. BPM eingeben und mit Set BPM übernehmen.
+                        <br>6. PLAY startet, PAUSE pausiert oder setzt fort.
+                        <br>7. Song clear leert die Songfolge.
                     </p>
                 </div>
 

@@ -126,8 +126,36 @@ h1 div {
     filter: brightness(1.15);
 }
 
+.pattern-tools,
+.transport-tools {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    grid-column: 1 / -1;
+}
+
+.pattern-tools .nes-select {
+    min-width: 180px;
+}
+
+#song-order-label {
+    font-size: 0.7rem;
+    text-align: center;
+}
+
+.song-info {
+    margin-bottom: 20px;
+}
+
 @media (max-width: 900px) {
     .grid-1 {
         grid-template-columns: repeat(4, 1fr);
+    }
+
+    .pattern-tools,
+    .transport-tools {
+        gap: 6px;
     }
 }
